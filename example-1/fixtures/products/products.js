@@ -11,19 +11,4 @@ module.exports = [
         name: "Github",
         url: 'https://github.com'
     },
-    {
-        _id: mongodb.ObjectId("563f9bf32d2ff0c1e0e6d6c2d"),
-        name: "Google",
-        url: 'https://google.com'
-    },
-    {
-        _id: mongodb.ObjectId("563f9bf32d2ff0c1e0e6d6c2d"),
-        name: "Google",
-        url: 'https://google.com'
-    },
-    {
-        _id: mongodb.ObjectId("563f9bf32d2ff0c1e0e6d6c2d"),
-        name: "Google",
-        url: 'https://google.com'
-    },
 ];
