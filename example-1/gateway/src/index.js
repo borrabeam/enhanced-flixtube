@@ -15,30 +15,54 @@ function setupHandlers(app) {
     // Main web page that lists videos.
     //
     app.get("/", (req, res) => {
-        http.request( // Get the list of videos from the metadata microservice.
+        http.request(
             {
-                host: `metadata`,
-                path: `/videos`,
-                method: `GET`,
+                host: 'advertising',
+                path: '/advertising',
+                method: 'GET'
             },
             (response) => {
-                let data = "";
-                response.on("data", chunk => {
-                    data += chunk;
-                });
+                let productData = ""
+                response.on('data', (chunk) => {
+                    productData += chunk
+                })
+                console.log(productData)
 
                 response.on("end", () => {
-                    // Renders the video list for display in the browser.
-                    res.render("video-list", { videos: JSON.parse(data).videos });
+                    http.request( // Get the list of videos from the metadata microservice.
+                    {
+                        host: `metadata`,
+                        path: `/videos`,
+                        method: `GET`,
+                    },
+                    (response) => {
+                        let data = "";
+                        response.on("data", chunk => {
+                            data += chunk;
+                        });
+        
+                        response.on("end", () => {
+                            // Renders the video list for display in the browser.
+                            console.log(data)
+                            res.render("video-list", { videos: data.videos, product: JSON.parse(productData) });
+                        });
+        
+                        response.on("error", err => {
+                            console.error("Failed to get video list.");
+                            console.error(err || `Status code: ${response.statusCode}`);
+                            res.sendStatus(500);
+                        });
+                    }
+                ).end();
                 });
 
                 response.on("error", err => {
-                    console.error("Failed to get video list.");
+                    console.error("Failed to get history.");
                     console.error(err || `Status code: ${response.statusCode}`);
                     res.sendStatus(500);
                 });
             }
-        ).end();
+        ).end()
     });
 
     //
@@ -82,28 +106,20 @@ function setupHandlers(app) {
     // Web page to upload a new video.
     //
     app.get("/upload", (req, res) => {
-        res.render("upload-video", {});
-    });
-
-    //
-    // Web page to show the users viewing history.
-    //
-    app.get("/history", (req, res) => {
-        http.request( // Gets the viewing history from the history microservice.
+        http.request(
             {
-                host: `history`,
-                path: `/videos`,
-                method: `GET`,
+                host: 'advertising',
+                path: '/advertising',
+                method: 'GET'
             },
             (response) => {
-                let data = "";
-                response.on("data", chunk => {
-                    data += chunk;
-                });
+                let productData = ""
+                response.on('data', (chunk) => {
+                    productData += chunk
+                })
 
                 response.on("end", () => {
-                    // Renders the history for display in the browser.
-                    res.render("history", { videos: JSON.parse(data).videos });
+                    res.render("upload-video", { product: JSON.parse(productData) });
                 });
 
                 response.on("error", err => {
@@ -112,7 +128,59 @@ function setupHandlers(app) {
                     res.sendStatus(500);
                 });
             }
-        ).end();
+        ).end()
+    });
+
+    //
+    // Web page to show the users viewing history.
+    //
+    app.get("/history", (req, res) => {
+        http.request(
+            {
+                host: 'advertising',
+                path: '/advertising',
+                method: 'GET'
+            },
+            (response) => {
+                let productData = ""
+                response.on('data', (chunk) => {
+                    productData += chunk
+                })
+
+                response.on("end", () => {
+                    http.request( // Gets the viewing history from the history microservice.
+                    {
+                        host: `history`,
+                        path: `/videos`,
+                        method: `GET`,
+                    },
+                    (response) => {
+                        let data = "";
+                        response.on("data", chunk => {
+                            data += chunk;
+                        });
+        
+                        response.on("end", () => {
+                            // Renders the history for display in the browser.
+                            res.render("history", { videos: JSON.parse(data).videos, product: JSON.parse(productData) });
+                        });
+        
+                        response.on("error", err => {
+                            console.error("Failed to get history.");
+                            console.error(err || `Status code: ${response.statusCode}`);
+                            res.sendStatus(500);
+                        });
+                    }
+                    ).end();
+                });
+
+                response.on("error", err => {
+                    console.error("Failed to get history.");
+                    console.error(err || `Status code: ${response.statusCode}`);
+                    res.sendStatus(500);
+                });
+            }
+        ).end()
     });
 
     //
